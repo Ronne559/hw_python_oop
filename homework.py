@@ -105,7 +105,7 @@ class SportsWalking(Training):
             / (self.height / self.SANT_TO_METR)
         ) * self.CONST_WALK_2 * self.weight
         ) * (self.duration * self.MIN_IN_HOUR)
-    
+
 
 class Swimming(Training):
     """Trainig: swimming."""
