@@ -64,8 +64,9 @@ class Training:
 class Running(Training):
     """Trainig: running."""
     # constants
-    COEFF_CALORIE_RUN_1: int = 18
-    COEFF_CALORIE_RUN_2: int = 20
+    CALORIES_MEAN_SPEED_MULTIPLIER: int = 18
+    CALORIES_MEAN_SPEED_SHIFT: int = 1.79
+    MIN_IN_HOUR: int = 60
 
     def __init__(self,
                  action: int,
@@ -75,8 +76,8 @@ class Running(Training):
         super().__init__(action, duration, weight)
 
     def get_spent_calories(self) -> float:
-        return ((self.COEFF_CALORIE_RUN_1 * self.get_mean_speed()
-                - self.COEFF_CALORIE_RUN_2) * self.weight / self.M_IN_KM
+        return ((self.CALORIES_MEAN_SPEED_MULTIPLIER * self.get_mean_speed()
+                + self.CALORIES_MEAN_SPEED_SHIFT) * self.weight / self.M_IN_KM
                 * self.duration * self.MIN_IN_HOUR)
 
 
@@ -85,6 +86,9 @@ class SportsWalking(Training):
     # constants
     CONST_WALK_1: float = 0.035
     CONST_WALK_2: float = 0.029
+    MIN_IN_HOUR: int = 60
+    KM_H_TO_M_SEC: float = 0.278
+    SANT_TO_METR: int = 100
 
     def __init__(self,
                  action: int,
@@ -96,11 +100,12 @@ class SportsWalking(Training):
         self.height = height
 
     def get_spent_calories(self) -> float:
-        return ((self.CONST_WALK_1 * self.weight
-                + (self.get_mean_speed() ** 2 // self.height)
-                * self.CONST_WALK_2 * self.weight)
-                * self.duration * self.MIN_IN_HOUR)
-
+        return (self.CONST_WALK_1 * self.weight + (
+            (self.get_mean_speed() * self.KM_H_TO_M_SEC) ** 2
+            / (self.height / self.SANT_TO_METR)
+        ) * self.CONST_WALK_2 * self.weight
+        ) * (self.duration * self.MIN_IN_HOUR)
+    
 
 class Swimming(Training):
     """Trainig: swimming."""
@@ -127,7 +132,8 @@ class Swimming(Training):
     def get_spent_calories(self) -> float:
         return ((self.get_mean_speed() + self.CONST_SWIM_1)
                 * self.CONST_SWIM_2
-                * self.weight)
+                * self.weight
+                * self.duration)
 
 
 def read_package(workout_type: str, data: List[float]) -> Training:
