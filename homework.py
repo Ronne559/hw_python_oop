@@ -1,30 +1,29 @@
-from abc import abstractmethod
 from dataclasses import asdict, dataclass
-from typing import Dict, List, Type
+from typing import ClassVar
 
 
 @dataclass
 class InfoMessage:
     """Trainig info message."""
+
+    FORMAT: ClassVar[str] = ('Тип тренировки: {training_type}; '
+                             'Длительность: {duration:.3f} ч.; '
+                             'Дистанция: {distance:.3f} км; '
+                             'Ср. скорость: {speed:.3f} км/ч; '
+                             'Потрачено ккал: {calories:.3f}.')
+
     training_type: str
     duration: float
     distance: float
     speed: float
     calories: float
-    MESSAGE: str = ('Тип тренировки: {training_type}; '
-                    'Длительность: {duration:.3f} ч.; '
-                    'Дистанция: {distance:.3f} км; '
-                    'Ср. скорость: {speed:.3f} км/ч; '
-                    'Потрачено ккал: {calories:.3f}.'
-                    )
 
     def get_message(self) -> str:
-        return self.MESSAGE.format(**asdict(self))
+        return self.FORMAT.format(**asdict(self))
 
 
 class Training:
     """Trainig, base class."""
-    # constants
     LEN_STEP: float = 0.65
     M_IN_KM: int = 1000
     MIN_IN_HOUR: int = 60
@@ -46,7 +45,6 @@ class Training:
         """Get mean speed."""
         return self.get_distance() / self.duration
 
-    @abstractmethod
     def get_spent_calories(self) -> float:
         """Get spent calories."""
         pass
@@ -57,23 +55,13 @@ class Training:
                            self.duration,
                            self.get_distance(),
                            self.get_mean_speed(),
-                           self.get_spent_calories()
-                           )
+                           self.get_spent_calories())
 
 
 class Running(Training):
     """Trainig: running."""
-    # constants
     CALORIES_MEAN_SPEED_MULTIPLIER: int = 18
     CALORIES_MEAN_SPEED_SHIFT: int = 1.79
-    MIN_IN_HOUR: int = 60
-
-    def __init__(self,
-                 action: int,
-                 duration: float,
-                 weight: float
-                 ) -> None:
-        super().__init__(action, duration, weight)
 
     def get_spent_calories(self) -> float:
         return ((self.CALORIES_MEAN_SPEED_MULTIPLIER * self.get_mean_speed()
@@ -83,10 +71,8 @@ class Running(Training):
 
 class SportsWalking(Training):
     """Trainig: SportsWalking."""
-    # constants
     CONST_WALK_1: float = 0.035
     CONST_WALK_2: float = 0.029
-    MIN_IN_HOUR: int = 60
     KM_H_TO_M_SEC: float = 0.278
     SANT_TO_METR: int = 100
 
@@ -109,7 +95,6 @@ class SportsWalking(Training):
 
 class Swimming(Training):
     """Trainig: swimming."""
-    # constants
     LEN_STEP: float = 1.38
     CONST_SWIM_1: float = 1.1
     CONST_SWIM_2: int = 2
@@ -136,15 +121,16 @@ class Swimming(Training):
                 * self.duration)
 
 
-def read_package(workout_type: str, data: List[float]) -> Training:
+def read_package(workout_type: str, data: list) -> Training:
     """Read data from module."""
-    types_workout: Dict[str, Type[Training]] = {'SWM': Swimming,
-                                                'RUN': Running,
-                                                'WLK': SportsWalking
-                                                }
-    if workout_type not in types_workout:
-        raise ValueError("Unsignet trainig code.")
-    return types_workout[workout_type](*data)
+    types_workout: dict = {
+        'SWM': Swimming,
+        'RUN': Running,
+        'WLK': SportsWalking
+    }
+    if training := types_workout.get(workout_type):
+        return training(*data)
+    raise ValueError('Unsignet trainig code.')
 
 
 def main(training: Training) -> None:
