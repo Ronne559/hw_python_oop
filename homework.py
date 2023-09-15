@@ -47,7 +47,7 @@ class Training:
 
     def get_spent_calories(self) -> float:
         """Get spent calories."""
-        raise NotImplementedError('Method Error.')
+        raise NotImplementedError(self.__class__.__name__)
 
     def show_training_info(self) -> InfoMessage:
         """Return info message about done trainig."""
@@ -121,7 +121,7 @@ class Swimming(Training):
                 * self.duration)
 
 
-def read_package(workout_type: str, data: int) -> Training:
+def read_package(workout_type: str, data: float) -> Training:
     """Read data from module."""
     types_workout: dict[str, type[Training]] = {
         'SWM': Swimming,
